@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <title>用户管理系统</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080a0f;
+            --surface: #0f1117;
+            --surface2: #161b26;
+            --surface3: #1c2335;
+            --border: #1e2640;
+            --border2: #2a3550;
+            --accent: #00f5a0;
+            --accent-dim: rgba(0,245,160,0.08);
+            --blue: #4db8ff;
+            --blue-dim: rgba(77,184,255,0.08);
+            --orange: #ff9f43;
+            --red: #ff6b6b;
+            --purple: #a78bfa;
+            --text: #e2e8f0;
+            --muted: #4a5568;
+            --muted2: #718096;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            font-size: 14px;
+            overflow-x: hidden;
+        }
+
+        /* 背景网格 */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                    linear-gradient(rgba(0,245,160,0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0,245,160,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 顶部光晕 */
+        body::after {
+            content: '';
+            position: fixed;
+            top: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 400px;
+            background: radial-gradient(ellipse, rgba(0,245,160,0.06) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Header */
+        .header {
+            position: relative;
+            z-index: 10;
+            background: rgba(15,17,23,0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left { display: flex; align-items: center; gap: 20px; }
+
+        .logo {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            color: var(--accent);
+            letter-spacing: 0.1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        .header-nav { display: flex; gap: 4px; }
+        .nav-item {
+            padding: 5px 14px;
+            font-size: 12px;
+            color: var(--muted2);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+        .nav-item:hover { color: var(--text); background: var(--surface2); }
+        .nav-item.active { color: var(--accent); background: var(--accent-dim); }
+
+        .header-right { display: flex; align-items: center; gap: 10px; }
+
+        .time-display {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: var(--muted);
+            letter-spacing: 0.05em;
+        }
+
+        /* 主体 */
+        .main {
+            position: relative;
+            z-index: 1;
+            padding: 24px 32px;
+            max-width: 1400px;
+        }
+
+        /* 页面标题 */
+        .page-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            opacity: 0;
+            transform: translateY(16px);
+            animation: fadeUp 0.5s ease forwards 0.1s;
+        }
+
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-title { font-size: 22px; font-weight: 300; letter-spacing: -0.02em; }
+        .page-title span { color: var(--accent); }
+        .page-subtitle { font-size: 12px; color: var(--muted2); margin-top: 4px; font-family: 'IBM Plex Mono', monospace; }
+
+        /* 统计卡片 */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 18px 20px;
+            position: relative;
+            overflow: hidden;
+            cursor: default;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.5s ease forwards;
+            transition: border-color 0.3s, transform 0.2s;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.15s; }
+        .stat-card:nth-child(2) { animation-delay: 0.22s; }
+        .stat-card:nth-child(3) { animation-delay: 0.29s; }
+        .stat-card:nth-child(4) { animation-delay: 0.36s; }
+
+        .stat-card:hover { transform: translateY(-2px); }
+        .stat-card:hover.c-green { border-color: rgba(0,245,160,0.3); }
+        .stat-card:hover.c-blue  { border-color: rgba(77,184,255,0.3); }
+        .stat-card:hover.c-orange { border-color: rgba(255,159,67,0.3); }
+        .stat-card:hover.c-red   { border-color: rgba(255,107,107,0.3); }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            transition: opacity 0.3s;
+        }
+        .c-green::before { background: linear-gradient(90deg, transparent, var(--accent), transparent); }
+        .c-blue::before  { background: linear-gradient(90deg, transparent, var(--blue), transparent); }
+        .c-orange::before { background: linear-gradient(90deg, transparent, var(--orange), transparent); }
+        .c-red::before   { background: linear-gradient(90deg, transparent, var(--red), transparent); }
+
+        .stat-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 28px;
+            font-weight: 300;
+            line-height: 1;
+            transition: all 0.4s;
+        }
+
+        .stat-card.c-green .stat-value { color: var(--accent); }
+        .stat-card.c-blue  .stat-value { color: var(--blue); }
+        .stat-card.c-orange .stat-value { color: var(--orange); }
+        .stat-card.c-red   .stat-value { color: var(--red); }
+
+        /* 工具栏 */
+        .toolbar {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            gap: 12px;
+            opacity: 0;
+            animation: fadeUp 0.5s ease forwards 0.4s;
+        }
+
+        .filter-group { display: flex; gap: 10px; align-items: flex-end; }
+
+        .field-wrap label {
+            display: block;
+            font-size: 11px;
+            color: var(--muted);
+            font-family: 'IBM Plex Mono', monospace;
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+        }
+
+        select, input[type="text"] {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: 'Noto Sans SC', sans-serif;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            appearance: none;
+        }
+
+        select:focus, input[type="text"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0,245,160,0.08);
+        }
+
+        /* 按钮 */
+        .btn {
+            padding: 8px 18px;
+            border-radius: 6px;
+            border: none;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: 'Noto Sans SC', sans-serif;
+            transition: all 0.2s;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #080a0f;
+            font-weight: 500;
+        }
+        .btn-primary:hover { background: #00e090; transform: translateY(-1px); }
+        .btn-primary:active { transform: translateY(0); }
+
+        .btn-add {
+            background: var(--surface2);
+            color: var(--blue);
+            border: 1px solid rgba(77,184,255,0.25);
+            font-weight: 500;
+        }
+        .btn-add:hover { background: var(--blue-dim); border-color: rgba(77,184,255,0.5); transform: translateY(-1px); }
+
+        .btn-sm {
+            padding: 4px 12px;
+            font-size: 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Noto Sans SC', sans-serif;
+            transition: all 0.15s;
+        }
+
+        .btn-edit-sm {
+            background: rgba(77,184,255,0.1);
+            color: var(--blue);
+            border: 1px solid rgba(77,184,255,0.2);
+        }
+        .btn-edit-sm:hover { background: rgba(77,184,255,0.2); }
+
+        .btn-del-sm {
+            background: rgba(255,107,107,0.1);
+            color: var(--red);
+            border: 1px solid rgba(255,107,107,0.2);
+        }
+        .btn-del-sm:hover { background: rgba(255,107,107,0.2); }
+
+        /* 状态栏 */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+        .status-dot.loading { animation: pulse 1s ease-in-out infinite; background: var(--orange); }
+
+        /* 表格 */
+        .table-wrap {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            opacity: 0;
+            animation: fadeUp 0.5s ease forwards 0.45s;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        thead tr {
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            padding: 11px 16px;
+            text-align: left;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 400;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s;
+        }
+
+        tbody tr {
+            transition: background 0.15s;
+            animation: rowIn 0.3s ease forwards;
+            opacity: 0;
+        }
+
+        @keyframes rowIn {
+            from { opacity: 0; transform: translateX(-8px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        tbody tr:hover td { background: var(--surface2); }
+        tbody tr:last-child td { border-bottom: none; }
+
+        .id-cell {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .name-cell { font-weight: 500; }
+
+        .email-cell {
+            font-size: 12px;
+            color: var(--muted2);
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .amount-cell {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            color: var(--accent);
+        }
+
+        /* 徽章 */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-family: 'IBM Plex Mono', monospace;
+            letter-spacing: 0.04em;
+        }
+
+        .badge::before {
+            content: '';
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .badge-vip      { background: rgba(255,159,67,0.12); color: var(--orange); border: 1px solid rgba(255,159,67,0.25); }
+        .badge-vip::before { background: var(--orange); }
+        .badge-active   { background: rgba(0,245,160,0.1);  color: var(--accent);  border: 1px solid rgba(0,245,160,0.2); }
+        .badge-active::before { background: var(--accent); animation: pulse 2s ease-in-out infinite; }
+        .badge-inactive { background: rgba(255,107,107,0.08); color: var(--red);   border: 1px solid rgba(255,107,107,0.15); }
+        .badge-inactive::before { background: var(--red); opacity: 0.5; }
+
+        .actions { display: flex; gap: 6px; }
+
+        /* 弹窗 */
+        .modal-bg {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-bg.open { display: flex; }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            border-radius: 12px;
+            padding: 32px;
+            width: 420px;
+            position: relative;
+            transform: scale(0.95) translateY(10px);
+            opacity: 0;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal-bg.open .modal {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .modal-close {
+            width: 28px; height: 28px;
+            border-radius: 6px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--muted2);
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+        .modal-close:hover { background: var(--surface3); color: var(--text); }
+
+        .form-row { margin-bottom: 16px; }
+        .form-row label {
+            display: block;
+            font-size: 11px;
+            color: var(--muted2);
+            font-family: 'IBM Plex Mono', monospace;
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .form-row input[type="text"],
+        .form-row select {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+        }
+
+        .form-row input[type="text"]:focus,
+        .form-row select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0,245,160,0.08);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid var(--border2);
+            color: var(--muted2);
+            padding: 8px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: 'Noto Sans SC', sans-serif;
+            transition: all 0.15s;
+        }
+        .btn-ghost:hover { border-color: var(--text); color: var(--text); }
+
+        /* 通知 Toast */
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+            padding: 12px 18px;
+            font-size: 13px;
+            z-index: 300;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { border-color: rgba(0,245,160,0.3); color: var(--accent); }
+        .toast.error   { border-color: rgba(255,107,107,0.3); color: var(--red); }
+
+        /* 删除确认弹窗 */
+        .confirm-modal {
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            border-radius: 12px;
+            padding: 28px;
+            width: 360px;
+            text-align: center;
+        }
+
+        .confirm-icon {
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            background: rgba(255,107,107,0.1);
+            border: 1px solid rgba(255,107,107,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 20px;
+        }
+
+        .confirm-title { font-size: 15px; font-weight: 500; margin-bottom: 8px; }
+        .confirm-desc { font-size: 13px; color: var(--muted2); margin-bottom: 24px; line-height: 1.6; }
+        .confirm-btns { display: flex; gap: 10px; justify-content: center; }
+
+        .btn-danger {
+            background: rgba(255,107,107,0.15);
+            color: var(--red);
+            border: 1px solid rgba(255,107,107,0.3);
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: 'Noto Sans SC', sans-serif;
+            transition: all 0.15s;
+        }
+        .btn-danger:hover { background: rgba(255,107,107,0.25); }
+
+        /* 空状态 */
+        .empty-state {
+            padding: 60px;
+            text-align: center;
+            color: var(--muted);
+        }
+        .empty-state .empty-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+            opacity: 0.4;
+        }
+        .empty-state p { font-size: 13px; font-family: 'IBM Plex Mono', monospace; }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+    <div class="header-left">
+        <div class="logo">
+            <div class="logo-dot"></div>
+            ADMIN · SHOP_DB
+        </div>
+        <div class="header-nav">
+            <div class="nav-item active">用户管理</div>
+            <div class="nav-item" onclick="showToast('订单模块开发中...', 'success')">订单数据</div>
+            <a class="nav-item" href="/report.html" style="text-decoration:none">数据报表</a>
+        </div>
+    </div>
+    <div class="header-right">
+        <span class="time-display" id="clock"></span>
+        <button class="btn btn-add" onclick="openAdd()"><i class="fas fa-user-plus"></i> 新增用户</button>
+    </div>
+</div>
+
+<div class="main">
+
+    <!-- 页面标题 -->
+    <div class="page-header">
+        <div>
+            <div class="page-title">用户<span>管理</span>面板</div>
+            <div class="page-subtitle">// real-time database management</div>
+        </div>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="stats">
+        <div class="stat-card c-green">
+            <div class="stat-label">TOTAL USERS</div>
+            <div class="stat-value" id="s-total">—</div>
+        </div>
+        <div class="stat-card c-blue">
+            <div class="stat-label">TOTAL REVENUE</div>
+            <div class="stat-value" id="s-amount">—</div>
+        </div>
+        <div class="stat-card c-orange">
+            <div class="stat-label">VIP USERS</div>
+            <div class="stat-value" id="s-vip">—</div>
+        </div>
+        <div class="stat-card c-red">
+            <div class="stat-label">INACTIVE</div>
+            <div class="stat-value" id="s-inactive">—</div>
+        </div>
+    </div>
+
+    <!-- 工具栏 -->
+    <div class="toolbar">
+        <div class="filter-group">
+            <div class="field-wrap">
+                <label>REGION</label>
+                <select id="f-region">
+                    <option value="">全部地区</option>
+                    <option value="华东">华东</option>
+                    <option value="华南">华南</option>
+                    <option value="华北">华北</option>
+                    <option value="西南">西南</option>
+                </select>
+            </div>
+            <div class="field-wrap">
+                <label>STATUS</label>
+                <select id="f-status">
+                    <option value="">全部状态</option>
+                    <option value="vip">VIP</option>
+                    <option value="active">活跃</option>
+                    <option value="inactive">不活跃</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="loadData()">查询</button>
+            <input type="file" id="csv-file" accept=".csv" style="display:none" onchange="importCSV()">
+            <button class="btn btn-add" onclick="document.getElementById('csv-file').click()"><i class="fas fa-file-import"></i> 导入 CSV</button>
+        </div>
+    </div>
+
+    <!-- 状态栏 -->
+    <div class="status-bar">
+        <div class="status-dot" id="status-dot"></div>
+        <span id="status-msg">初始化中...</span>
+    </div>
+
+    <!-- 表格 -->
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>姓名</th>
+                <th>邮箱</th>
+                <th>地区</th>
+                <th>状态</th>
+                <th>总消费</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 新增/编辑 弹窗 -->
+<div class="modal-bg" id="modal">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="modal-title">新增用户</div>
+            <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+        <input type="hidden" id="edit-id">
+        <div class="form-row"><label>姓名</label><input type="text" id="f-name" placeholder="张伟"></div>
+        <div class="form-row"><label>邮箱</label><input type="text" id="f-email" placeholder="example@mail.com"></div>
+        <div class="form-row">
+            <label>地区</label>
+            <select id="f-reg">
+                <option value="华东">华东</option>
+                <option value="华南">华南</option>
+                <option value="华北">华北</option>
+                <option value="西南">西南</option>
+            </select>
+        </div>
+        <div class="form-row">
+            <label>状态</label>
+            <select id="f-stat">
+                <option value="active">活跃</option>
+                <option value="vip">VIP</option>
+                <option value="inactive">不活跃</option>
+            </select>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-ghost" onclick="closeModal()">取消</button>
+            <button class="btn btn-primary" onclick="saveUser()">保存</button>
+        </div>
+    </div>
+</div>
+
+<!-- 删除确认弹窗 -->
+<div class="modal-bg" id="confirm-modal">
+    <div class="confirm-modal">
+        <div class="confirm-icon">⚠</div>
+        <div class="confirm-title">确认删除</div>
+        <div class="confirm-desc" id="confirm-desc">此操作不可撤销，同时会删除该用户的所有订单数据。</div>
+        <div class="confirm-btns">
+            <button class="btn-ghost" onclick="closeConfirm()">取消</button>
+            <button class="btn-danger" id="confirm-ok">确认删除</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast 通知 -->
+<div class="toast" id="toast"></div>
+
+<script>
+    let allData = [];
+    let pendingDeleteId = null;
+
+    // 时钟
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('clock').textContent =
+            now.toLocaleTimeString('zh-CN', { hour12: false });
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // 页面加载
+    window.onload = () => loadData();
+
+    function setStatus(loading, msg) {
+        const dot = document.getElementById('status-dot');
+        dot.className = 'status-dot' + (loading ? ' loading' : '');
+        document.getElementById('status-msg').textContent = msg;
+    }
+
+    function loadData() {
+        const region = document.getElementById('f-region').value;
+        const status = document.getElementById('f-status').value;
+        setStatus(true, '正在查询数据库...');
+
+        fetch('/search?region=' + encodeURIComponent(region) + '&status=' + encodeURIComponent(status))
+            .then(r => r.json())
+            .then(data => {
+                allData = data.map(row => {
+                    const p = row.split('|');
+                    return { id: p[0], name: p[1], email: p[2], region: p[3], status: p[4], amount: parseFloat(p[5]) };
+                });
+                renderTable(allData);
+                renderStats(allData);
+                setStatus(false, '共 ' + allData.length + ' 条记录 · 已同步');
+            })
+            .catch(() => setStatus(false, '连接失败，请检查服务器'));
+    }
+
+    function renderTable(data) {
+        const tbody = document.getElementById('tbody');
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7">
+        <div class="empty-state">
+          <div class="empty-icon">◇</div>
+          <p>// no records found</p>
+        </div>
+      </td></tr>`;
+            return;
+        }
+        tbody.innerHTML = data.map((u, i) => `
+      <tr style="animation-delay:${i * 0.04}s">
+        <td class="id-cell">#${u.id}</td>
+        <td class="name-cell">${u.name}</td>
+        <td class="email-cell">${u.email}</td>
+        <td>${u.region}</td>
+        <td>${badge(u.status)}</td>
+        <td class="amount-cell">¥ ${u.amount.toLocaleString()}</td>
+        <td>
+          <div class="actions">
+            <button class="btn-sm btn-edit-sm" onclick="openEdit('${u.id}')"><i class="fas fa-edit"></i> 编辑</button>
+<button class="btn-sm btn-del-sm" onclick="confirmDelete('${u.id}', '${u.name}')"><i class="fas fa-trash"></i> 删除</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+    }
+
+    function renderStats(data) {
+        const total    = data.length;
+        const amount   = data.reduce((s, u) => s + u.amount, 0);
+        const vip      = data.filter(u => u.status === 'vip').length;
+        const inactive = data.filter(u => u.status === 'inactive').length;
+        animateNum('s-total',    0, total,  0, '');
+        animateNum('s-amount',   0, Math.round(amount), 0, '¥');
+        animateNum('s-vip',      0, vip,    0, '');
+        animateNum('s-inactive', 0, inactive, 0, '');
+    }
+
+    // 数字滚动动画
+    function animateNum(id, from, to, decimals, prefix) {
+        const el = document.getElementById(id);
+        const duration = 600;
+        const start = performance.now();
+        function step(now) {
+            const progress = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const current = from + (to - from) * eased;
+            el.textContent = prefix + (decimals ? current.toFixed(decimals) : Math.round(current)).toLocaleString();
+            if (progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    }
+
+    function badge(status) {
+        const map   = { vip: 'badge-vip', active: 'badge-active', inactive: 'badge-inactive' };
+        const label = { vip: 'VIP', active: '活跃', inactive: '不活跃' };
+        return `<span class="badge ${map[status]}">${label[status]}</span>`;
+    }
+
+    // 新增
+    function openAdd() {
+        document.getElementById('modal-title').textContent = '新增用户';
+        document.getElementById('edit-id').value  = '';
+        document.getElementById('f-name').value   = '';
+        document.getElementById('f-email').value  = '';
+        document.getElementById('f-reg').value    = '华东';
+        document.getElementById('f-stat').value   = 'active';
+        document.getElementById('modal').classList.add('open');
+        setTimeout(() => document.getElementById('f-name').focus(), 300);
+    }
+
+    // 编辑
+    function openEdit(id) {
+        const u = allData.find(u => u.id == id);
+        document.getElementById('modal-title').textContent = '编辑用户';
+        document.getElementById('edit-id').value  = u.id;
+        document.getElementById('f-name').value   = u.name;
+        document.getElementById('f-email').value  = u.email;
+        document.getElementById('f-reg').value    = u.region;
+        document.getElementById('f-stat').value   = u.status;
+        document.getElementById('modal').classList.add('open');
+    }
+
+    function closeModal() {
+        document.getElementById('modal').classList.remove('open');
+    }
+
+    // 保存
+    function saveUser() {
+        const id     = document.getElementById('edit-id').value;
+        const name   = document.getElementById('f-name').value.trim();
+        const email  = document.getElementById('f-email').value.trim();
+        const region = document.getElementById('f-reg').value;
+        const status = document.getElementById('f-stat').value;
+
+        if (!name || !email) { showToast('姓名和邮箱不能为空', 'error'); return; }
+
+        const params = new URLSearchParams({ name, email, region, status });
+        const isEdit = id !== '';
+        const url    = isEdit ? '/user/update/' + id : '/user/add';
+        const method = isEdit ? 'PUT' : 'POST';
+
+        fetch(url + '?' + params.toString(), { method })
+            .then(r => r.text())
+            .then(result => {
+                if (result === 'success') {
+                    closeModal();
+                    loadData();
+                    showToast(isEdit ? '用户信息已更新' : '用户已成功新增', 'success');
+                } else {
+                    showToast('操作失败：' + result, 'error');
+                }
+            });
+    }
+
+    // 删除确认
+    function confirmDelete(id, name) {
+        pendingDeleteId = id;
+        document.getElementById('confirm-desc').textContent =
+            '即将删除用户「' + name + '」，此操作不可撤销，同时会删除其所有订单数据。';
+        document.getElementById('confirm-modal').classList.add('open');
+        document.getElementById('confirm-ok').onclick = () => doDelete(id, name);
+    }
+
+    function closeConfirm() {
+        document.getElementById('confirm-modal').classList.remove('open');
+    }
+
+    function doDelete(id, name) {
+        closeConfirm();
+        fetch('/user/delete/' + id, { method: 'DELETE' })
+            .then(r => r.text())
+            .then(result => {
+                if (result === 'success') {
+                    loadData();
+                    showToast('用户「' + name + '」已删除', 'success');
+                } else {
+                    showToast('删除失败：' + result, 'error');
+                }
+            });
+    }
+
+    // Toast 通知
+    function showToast(msg, type) {
+        const el = document.getElementById('toast');
+        el.textContent = (type === 'success' ? '✓  ' : '✕  ') + msg;
+        el.className = 'toast ' + type + ' show';
+        setTimeout(() => el.classList.remove('show'), 2800);
+    }
+    function importCSV() {
+        const file = document.getElementById('csv-file').files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        setStatus(true, '正在导入，请稍候...');
+
+        fetch('/user/import', { method: 'POST', body: formData })
+            .then(r => r.text())
+            .then(result => {
+                if (result.startsWith('success')) {
+                    const count = result.split(':')[1];
+                    loadData();
+                    showToast('成功导入 ' + count + ' 条数据', 'success');
+                } else {
+                    showToast('导入失败：' + result, 'error');
+                }
+                document.getElementById('csv-file').value = '';
+            });
+    }
+    // ESC 关闭弹窗
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { closeModal(); closeConfirm(); }
+    });
+</script>
+</body>
+</html>

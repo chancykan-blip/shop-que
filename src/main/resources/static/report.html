@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <meta charset="UTF-8">
+    <title>数据报表</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg: #080a0f;
+            --surface: #0f1117;
+            --surface2: #161b26;
+            --border: #1e2640;
+            --border2: #2a3550;
+            --accent: #00f5a0;
+            --blue: #4db8ff;
+            --orange: #ff9f43;
+            --red: #ff6b6b;
+            --purple: #a78bfa;
+            --text: #e2e8f0;
+            --muted: #4a5568;
+            --muted2: #718096;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            font-size: 14px;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                    linear-gradient(rgba(0,245,160,0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0,245,160,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            top: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 400px;
+            background: radial-gradient(ellipse, rgba(0,245,160,0.05) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Header */
+        .header {
+            position: relative;
+            z-index: 10;
+            background: rgba(15,17,23,0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            color: var(--accent);
+            letter-spacing: 0.1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        .header-nav { display: flex; gap: 4px; }
+        .nav-item {
+            padding: 5px 14px;
+            font-size: 12px;
+            color: var(--muted2);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'IBM Plex Mono', monospace;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .nav-item:hover  { color: var(--text); background: var(--surface2); }
+        .nav-item.active { color: var(--accent); background: rgba(0,245,160,0.08); }
+
+        .time-display {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        /* 主体 */
+        .main {
+            position: relative;
+            z-index: 1;
+            padding: 24px 32px;
+        }
+
+        /* 入场动画 */
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-up {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.5s ease forwards;
+        }
+
+        /* 页面标题 */
+        .page-header {
+            margin-bottom: 24px;
+            opacity: 0;
+            transform: translateY(16px);
+            animation: fadeUp 0.5s ease forwards 0.1s;
+        }
+
+        .page-title { font-size: 22px; font-weight: 300; letter-spacing: -0.02em; }
+        .page-title span { color: var(--accent); }
+        .page-subtitle { font-size: 12px; color: var(--muted2); margin-top: 4px; font-family: 'IBM Plex Mono', monospace; }
+
+        /* 统计卡片 */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 18px 20px;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.5s ease forwards;
+            transition: border-color 0.3s, transform 0.2s;
+        }
+
+        .stat-card:hover { transform: translateY(-2px); }
+        .stat-card:nth-child(1) { animation-delay: 0.15s; }
+        .stat-card:nth-child(2) { animation-delay: 0.22s; }
+        .stat-card:nth-child(3) { animation-delay: 0.29s; }
+        .stat-card:nth-child(4) { animation-delay: 0.36s; }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+        }
+
+        .sc-green::before  { background: linear-gradient(90deg, transparent, var(--accent), transparent); }
+        .sc-blue::before   { background: linear-gradient(90deg, transparent, var(--blue), transparent); }
+        .sc-orange::before { background: linear-gradient(90deg, transparent, var(--orange), transparent); }
+        .sc-purple::before { background: linear-gradient(90deg, transparent, var(--purple), transparent); }
+
+        .stat-card:hover.sc-green  { border-color: rgba(0,245,160,0.3); }
+        .stat-card:hover.sc-blue   { border-color: rgba(77,184,255,0.3); }
+        .stat-card:hover.sc-orange { border-color: rgba(255,159,67,0.3); }
+        .stat-card:hover.sc-purple { border-color: rgba(167,139,250,0.3); }
+
+        .stat-icon {
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .sc-green  .stat-icon { color: var(--accent); }
+        .sc-blue   .stat-icon { color: var(--blue); }
+        .sc-orange .stat-icon { color: var(--orange); }
+        .sc-purple .stat-icon { color: var(--purple); }
+
+        .stat-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 26px;
+            font-weight: 300;
+            line-height: 1;
+        }
+
+        .sc-green  .stat-value { color: var(--accent); }
+        .sc-blue   .stat-value { color: var(--blue); }
+        .sc-orange .stat-value { color: var(--orange); }
+        .sc-purple .stat-value { color: var(--purple); }
+
+        /* 图表网格 */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .chart-full { grid-column: 1 / -1; }
+
+        .chart-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px 24px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.5s ease forwards;
+        }
+
+        .chart-card:nth-child(1) { animation-delay: 0.4s; }
+        .chart-card:nth-child(2) { animation-delay: 0.5s; }
+        .chart-card:nth-child(3) { animation-delay: 0.6s; }
+
+        .chart-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chart-title i { color: var(--accent); font-size: 12px; }
+
+        .chart-subtitle {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+        }
+
+        .chart-wrap {
+            position: relative;
+            height: 260px;
+        }
+
+        .chart-wrap-sm {
+            position: relative;
+            height: 220px;
+        }
+
+        /* 排行榜 */
+        .rank-list { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+
+        .rank-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: var(--surface2);
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            transition: border-color 0.2s;
+        }
+        .rank-item:hover { border-color: var(--border2); }
+
+        .rank-num {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: var(--muted);
+            width: 20px;
+            text-align: center;
+        }
+        .rank-num.top { color: var(--accent); }
+
+        .rank-name { flex: 1; font-size: 13px; font-weight: 500; }
+        .rank-region { font-size: 11px; color: var(--muted2); }
+
+        .rank-amount {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            color: var(--accent);
+        }
+
+        .rank-bar-wrap {
+            width: 80px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .rank-bar {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 2px;
+            transition: width 0.8s ease;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+    <div style="display:flex;align-items:center;gap:20px">
+        <div class="logo">
+            <div class="logo-dot"></div>
+            ADMIN · SHOP_DB
+        </div>
+        <div class="header-nav">
+            <a class="nav-item" href="/index.html">用户管理</a>
+            <a class="nav-item" href="#">订单数据</a>
+            <a class="nav-item active" href="/report.html">数据报表</a>
+        </div>
+    </div>
+    <span class="time-display" id="clock"></span>
+</div>
+
+<div class="main">
+
+    <!-- 页面标题 -->
+    <div class="page-header">
+        <div class="page-title">数据<span>报表</span></div>
+        <div class="page-subtitle">// auto-generated from database · real-time</div>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="stats">
+        <div class="stat-card sc-green">
+            <div class="stat-icon"><i class="fas fa-users"></i></div>
+            <div class="stat-label">总用户数</div>
+            <div class="stat-value" id="s-total">—</div>
+        </div>
+        <div class="stat-card sc-blue">
+            <div class="stat-icon"><i class="fas fa-yen-sign"></i></div>
+            <div class="stat-label">总消费额</div>
+            <div class="stat-value" id="s-revenue">—</div>
+        </div>
+        <div class="stat-card sc-orange">
+            <div class="stat-icon"><i class="fas fa-crown"></i></div>
+            <div class="stat-label">VIP 占比</div>
+            <div class="stat-value" id="s-vip-rate">—</div>
+        </div>
+        <div class="stat-card sc-purple">
+            <div class="stat-icon"><i class="fas fa-receipt"></i></div>
+            <div class="stat-label">订单总数</div>
+            <div class="stat-value" id="s-orders">—</div>
+        </div>
+    </div>
+
+    <!-- 图表区域 -->
+    <div class="chart-grid">
+
+        <!-- 折线图：每月订单趋势 -->
+        <div class="chart-card chart-full">
+            <div class="chart-header">
+                <div class="chart-title"><i class="fas fa-chart-line"></i> 每月订单金额趋势</div>
+                <div class="chart-subtitle">MONTHLY REVENUE TREND</div>
+            </div>
+            <div class="chart-wrap">
+                <canvas id="lineChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 柱状图：地区分布 -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-title"><i class="fas fa-chart-bar"></i> 各地区用户数量</div>
+                <div class="chart-subtitle">USERS BY REGION</div>
+            </div>
+            <div class="chart-wrap-sm">
+                <canvas id="barChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 饼图：状态分布 -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="chart-title"><i class="fas fa-chart-pie"></i> 用户状态分布</div>
+                <div class="chart-subtitle">USER STATUS DISTRIBUTION</div>
+            </div>
+            <div class="chart-wrap-sm">
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 消费排行榜 -->
+    <div class="chart-card fade-up" style="animation-delay:0.7s">
+        <div class="chart-header">
+            <div class="chart-title"><i class="fas fa-trophy"></i> 用户消费排行榜</div>
+            <div class="chart-subtitle">TOP USERS BY REVENUE</div>
+        </div>
+        <div class="rank-list" id="rank-list"></div>
+    </div>
+
+</div>
+
+<script>
+    // 时钟
+    function updateClock() {
+        document.getElementById('clock').textContent =
+            new Date().toLocaleTimeString('zh-CN', { hour12: false });
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Chart.js 全局配置
+    Chart.defaults.color = '#4a5568';
+    Chart.defaults.borderColor = '#1e2640';
+    Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+    Chart.defaults.font.size = 11;
+
+    // 数字滚动动画
+    function animateNum(id, to, prefix, suffix) {
+        const el = document.getElementById(id);
+        const start = performance.now();
+        function step(now) {
+            const progress = Math.min((now - start) / 800, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const current = Math.round(to * eased);
+            el.textContent = (prefix || '') + current.toLocaleString() + (suffix || '');
+            if (progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    }
+
+    // 加载所有数据
+    async function loadAll() {
+        const [regionData, statusData, monthlyData, userData] = await Promise.all([
+            fetch('/stats/region').then(r => r.json()),
+            fetch('/stats/status').then(r => r.json()),
+            fetch('/stats/monthly').then(r => r.json()),
+            fetch('/search?region=&status=').then(r => r.json()),
+        ]);
+
+        const users = userData.map(row => {
+            const p = row.split('|');
+            return { id: p[0], name: p[1], region: p[3], status: p[4], amount: parseFloat(p[5]) };
+        });
+
+        const region = regionData.map(r => ({ label: r.split('|')[0], value: parseInt(r.split('|')[1]) }));
+        const status = statusData.map(r => ({ label: r.split('|')[0], value: parseInt(r.split('|')[1]) }));
+        const monthly = monthlyData.map(r => ({ label: r.split('|')[0], value: parseFloat(r.split('|')[1]) }));
+
+        // 统计卡片
+        const totalRevenue = users.reduce((s, u) => s + u.amount, 0);
+        const vipCount     = users.filter(u => u.status === 'vip').length;
+        const vipRate      = users.length ? Math.round(vipCount / users.length * 100) : 0;
+        const orderCount   = monthlyData.length > 0 ? monthlyData.reduce((s, r) => s + 1, 0) : 0;
+
+        animateNum('s-total',    users.length,              '',  '');
+        animateNum('s-revenue',  Math.round(totalRevenue),  '¥', '');
+        animateNum('s-vip-rate', vipRate,                   '',  '%');
+        animateNum('s-orders',   monthly.length,            '',  '');
+
+        // 折线图
+        new Chart(document.getElementById('lineChart'), {
+            type: 'line',
+            data: {
+                labels: monthly.map(m => m.label),
+                datasets: [{
+                    label: '订单金额',
+                    data: monthly.map(m => m.value),
+                    borderColor: '#00f5a0',
+                    backgroundColor: 'rgba(0,245,160,0.06)',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#00f5a0',
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    fill: true,
+                    tension: 0.4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#161b26',
+                        borderColor: '#2a3550',
+                        borderWidth: 1,
+                        callbacks: {
+                            label: ctx => '¥ ' + ctx.parsed.y.toLocaleString()
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid: { color: '#1e2640' } },
+                    y: {
+                        grid: { color: '#1e2640' },
+                        ticks: { callback: val => '¥' + val.toLocaleString() }
+                    }
+                }
+            }
+        });
+
+        // 柱状图
+        new Chart(document.getElementById('barChart'), {
+            type: 'bar',
+            data: {
+                labels: region.map(r => r.label),
+                datasets: [{
+                    label: '用户数',
+                    data: region.map(r => r.value),
+                    backgroundColor: ['rgba(0,245,160,0.7)', 'rgba(77,184,255,0.7)', 'rgba(255,159,67,0.7)', 'rgba(167,139,250,0.7)'],
+                    borderColor:     ['#00f5a0', '#4db8ff', '#ff9f43', '#a78bfa'],
+                    borderWidth: 1,
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#161b26',
+                        borderColor: '#2a3550',
+                        borderWidth: 1,
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { grid: { color: '#1e2640' }, ticks: { stepSize: 1 } }
+                }
+            }
+        });
+
+        // 饼图
+        const statusLabel = { vip: 'VIP', active: '活跃', inactive: '不活跃' };
+        new Chart(document.getElementById('pieChart'), {
+            type: 'doughnut',
+            data: {
+                labels: status.map(s => statusLabel[s.label] || s.label),
+                datasets: [{
+                    data: status.map(s => s.value),
+                    backgroundColor: ['rgba(255,159,67,0.8)', 'rgba(0,245,160,0.8)', 'rgba(255,107,107,0.8)'],
+                    borderColor: ['#ff9f43', '#00f5a0', '#ff6b6b'],
+                    borderWidth: 1,
+                    hoverOffset: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { color: '#718096', padding: 16, font: { size: 12 } }
+                    },
+                    tooltip: {
+                        backgroundColor: '#161b26',
+                        borderColor: '#2a3550',
+                        borderWidth: 1,
+                    }
+                }
+            }
+        });
+
+        // 消费排行榜
+        const sorted = [...users].sort((a, b) => b.amount - a.amount).slice(0, 6);
+        const maxAmt = sorted[0]?.amount || 1;
+        document.getElementById('rank-list').innerHTML = sorted.map((u, i) => `
+      <div class="rank-item">
+        <div class="rank-num ${i < 3 ? 'top' : ''}">${i + 1}</div>
+        <div class="rank-name">${u.name}</div>
+        <div class="rank-region">${u.region}</div>
+        <div class="rank-bar-wrap">
+          <div class="rank-bar" style="width:${Math.round(u.amount / maxAmt * 100)}%"></div>
+        </div>
+        <div class="rank-amount">¥ ${u.amount.toLocaleString()}</div>
+      </div>
+    `).join('');
+    }
+
+    loadAll();
+</script>
+</body>
+</html>
