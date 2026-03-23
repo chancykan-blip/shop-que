@@ -6,10 +6,17 @@ import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 public class TestConnection {
 
-    static final String URL      = "jdbc:mysql://localhost:3306/shop_db?useSSL=false&serverTimezone=UTC";
-    static final String USERNAME = "root";
-    static final String PASSWORD = "dzsjqlx31";  // ← 改成你的
+    static final String URL = System.getenv("DB_URL") != null
+            ? System.getenv("DB_URL")
+            : "jdbc:mysql://localhost:3306/shop_db?useSSL=false&serverTimezone=UTC";
 
+    static final String USERNAME = System.getenv("DB_USER") != null
+            ? System.getenv("DB_USER")
+            : "root";
+
+    static final String PASSWORD = System.getenv("DB_PASS") != null
+            ? System.getenv("DB_PASS")
+            : "dzsjqlx31";  // ← 这里保留你本地的密码不变
     // 查询用户（支持空条件 = 查全部）
     public static List<String> searchUsers(String region, String status) {
         List<String> list = new ArrayList<>();
