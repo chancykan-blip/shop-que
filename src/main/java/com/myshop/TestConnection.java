@@ -54,6 +54,71 @@ public class TestConnection {
         return list;
     }
 
+    // 查询所有订单
+    public static List<String> getOrders() {
+        List<String> list = new ArrayList<>();
+        String sql = "SELECT o.id, u.name, u.region, o.amount, o.order_date " +
+                "FROM orders o JOIN users u ON o.user_id = u.id " +
+                "ORDER BY o.order_date DESC";
+        try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                list.add(rs.getInt("id")          + "|" +
+                        rs.getString("name")     + "|" +
+                        rs.getString("region")   + "|" +
+                        rs.getDouble("amount")   + "|" +
+                        rs.getString("order_date"));
+            }
+        } catch (Exception e) {
+            System.out.println("出错：" + e.getMessage());
+        }
+        return list;
+    }
+
+    // 新增订单
+    public static String addOrder(int userId, double amount, String orderDate) {
+        String sql = "INSERT INTO orders (user_id, amount, order_date) VALUES (?, ?, ?)";
+        try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            stmt.setDouble(2, amount);
+            stmt.setString(3, orderDate);
+            stmt.executeUpdate();
+            return "success";
+        } catch (Exception e) {
+            return "error:" + e.getMessage();
+        }
+    }
+
+    // 删除订单
+    public static String deleteOrder(int id) {
+        String sql = "DELETE FROM orders WHERE id = ?";
+        try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+            return "success";
+        } catch (Exception e) {
+            return "error:" + e.getMessage();
+        }
+    }
+
+    // 获取所有用户（给下拉框用）
+    public static List<String> getAllUsers() {
+        List<String> list = new ArrayList<>();
+        String sql = "SELECT id, name FROM users ORDER BY id";
+        try (Connection conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                list.add(rs.getInt("id") + "|" + rs.getString("name"));
+            }
+        } catch (Exception e) {
+            System.out.println("出错：" + e.getMessage());
+        }
+        return list;
+    }
     // 新增用户
     public static String addUser(String name, String email, String region, String status) {
         String sql = "INSERT INTO users (name, email, region, status) VALUES (?, ?, ?, ?)";
