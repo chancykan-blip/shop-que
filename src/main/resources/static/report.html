@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
     <meta charset="UTF-8">
-    <title>数据报表</title>
+    <title>Analytics Report</title>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -116,14 +116,13 @@
             color: var(--muted);
         }
 
-        /* 主体 */
+        /* Main */
         .main {
             position: relative;
             z-index: 1;
             padding: 24px 32px;
         }
 
-        /* 入场动画 */
         @keyframes fadeUp {
             to { opacity: 1; transform: translateY(0); }
         }
@@ -134,7 +133,6 @@
             animation: fadeUp 0.5s ease forwards;
         }
 
-        /* 页面标题 */
         .page-header {
             margin-bottom: 24px;
             opacity: 0;
@@ -146,7 +144,7 @@
         .page-title span { color: var(--accent); }
         .page-subtitle { font-size: 12px; color: var(--muted2); margin-top: 4px; font-family: 'IBM Plex Mono', monospace; }
 
-        /* 统计卡片 */
+        /* Stats Cards */
         .stats {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -190,10 +188,7 @@
         .stat-card:hover.sc-orange { border-color: rgba(255,159,67,0.3); }
         .stat-card:hover.sc-purple { border-color: rgba(167,139,250,0.3); }
 
-        .stat-icon {
-            font-size: 16px;
-            margin-bottom: 12px;
-        }
+        .stat-icon { font-size: 16px; margin-bottom: 12px; }
 
         .sc-green  .stat-icon { color: var(--accent); }
         .sc-blue   .stat-icon { color: var(--blue); }
@@ -221,7 +216,7 @@
         .sc-orange .stat-value { color: var(--orange); }
         .sc-purple .stat-value { color: var(--purple); }
 
-        /* 图表网格 */
+        /* Chart Grid */
         .chart-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -270,17 +265,10 @@
             letter-spacing: 0.08em;
         }
 
-        .chart-wrap {
-            position: relative;
-            height: 260px;
-        }
+        .chart-wrap { position: relative; height: 260px; }
+        .chart-wrap-sm { position: relative; height: 220px; }
 
-        .chart-wrap-sm {
-            position: relative;
-            height: 220px;
-        }
-
-        /* 排行榜 */
+        /* Rankings */
         .rank-list { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
 
         .rank-item {
@@ -331,7 +319,6 @@
 </head>
 <body>
 
-<!-- Header -->
 <div class="header">
     <div style="display:flex;align-items:center;gap:20px">
         <div class="logo">
@@ -339,9 +326,9 @@
             ADMIN · SHOP_DB
         </div>
         <div class="header-nav">
-            <a class="nav-item" href="/index.html">用户管理</a>
-            <a class="nav-item" href="orders.html">订单数据</a>
-            <a class="nav-item active" href="/report.html">数据报表</a>
+            <a class="nav-item" href="/index.html">USERS</a>
+            <a class="nav-item" href="orders.html">ORDERS</a>
+            <a class="nav-item active" href="/report.html">REPORTS</a>
         </div>
     </div>
     <span class="time-display" id="clock"></span>
@@ -349,43 +336,39 @@
 
 <div class="main">
 
-    <!-- 页面标题 -->
     <div class="page-header">
-        <div class="page-title">数据<span>报表</span></div>
+        <div class="page-title">Analytics <span>Report</span></div>
         <div class="page-subtitle">// auto-generated from database · real-time</div>
     </div>
 
-    <!-- 统计卡片 -->
     <div class="stats">
         <div class="stat-card sc-green">
             <div class="stat-icon"><i class="fas fa-users"></i></div>
-            <div class="stat-label">总用户数</div>
+            <div class="stat-label">Total Users</div>
             <div class="stat-value" id="s-total">—</div>
         </div>
         <div class="stat-card sc-blue">
-            <div class="stat-icon"><i class="fas fa-yen-sign"></i></div>
-            <div class="stat-label">总消费额</div>
+            <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+            <div class="stat-label">Gross Revenue</div>
             <div class="stat-value" id="s-revenue">—</div>
         </div>
         <div class="stat-card sc-orange">
             <div class="stat-icon"><i class="fas fa-crown"></i></div>
-            <div class="stat-label">VIP 占比</div>
+            <div class="stat-label">VIP Ratio</div>
             <div class="stat-value" id="s-vip-rate">—</div>
         </div>
         <div class="stat-card sc-purple">
             <div class="stat-icon"><i class="fas fa-receipt"></i></div>
-            <div class="stat-label">订单总数</div>
+            <div class="stat-label">Total Orders</div>
             <div class="stat-value" id="s-orders">—</div>
         </div>
     </div>
 
-    <!-- 图表区域 -->
     <div class="chart-grid">
 
-        <!-- 折线图：每月订单趋势 -->
         <div class="chart-card chart-full">
             <div class="chart-header">
-                <div class="chart-title"><i class="fas fa-chart-line"></i> 每月订单金额趋势</div>
+                <div class="chart-title"><i class="fas fa-chart-line"></i> Monthly Revenue Trend</div>
                 <div class="chart-subtitle">MONTHLY REVENUE TREND</div>
             </div>
             <div class="chart-wrap">
@@ -393,10 +376,9 @@
             </div>
         </div>
 
-        <!-- 柱状图：地区分布 -->
         <div class="chart-card">
             <div class="chart-header">
-                <div class="chart-title"><i class="fas fa-chart-bar"></i> 各地区用户数量</div>
+                <div class="chart-title"><i class="fas fa-chart-bar"></i> User Count by Region</div>
                 <div class="chart-subtitle">USERS BY REGION</div>
             </div>
             <div class="chart-wrap-sm">
@@ -404,10 +386,9 @@
             </div>
         </div>
 
-        <!-- 饼图：状态分布 -->
         <div class="chart-card">
             <div class="chart-header">
-                <div class="chart-title"><i class="fas fa-chart-pie"></i> 用户状态分布</div>
+                <div class="chart-title"><i class="fas fa-chart-pie"></i> User Status Distribution</div>
                 <div class="chart-subtitle">USER STATUS DISTRIBUTION</div>
             </div>
             <div class="chart-wrap-sm">
@@ -417,10 +398,9 @@
 
     </div>
 
-    <!-- 消费排行榜 -->
     <div class="chart-card fade-up" style="animation-delay:0.7s">
         <div class="chart-header">
-            <div class="chart-title"><i class="fas fa-trophy"></i> 用户消费排行榜</div>
+            <div class="chart-title"><i class="fas fa-trophy"></i> Revenue Leaderboard</div>
             <div class="chart-subtitle">TOP USERS BY REVENUE</div>
         </div>
         <div class="rank-list" id="rank-list"></div>
@@ -429,21 +409,21 @@
 </div>
 
 <script>
-    // 时钟
+    // Clock
     function updateClock() {
         document.getElementById('clock').textContent =
-            new Date().toLocaleTimeString('zh-CN', { hour12: false });
+            new Date().toLocaleTimeString('en-US', { hour12: false });
     }
     setInterval(updateClock, 1000);
     updateClock();
 
-    // Chart.js 全局配置
+    // Chart.js Global Config
     Chart.defaults.color = '#4a5568';
     Chart.defaults.borderColor = '#1e2640';
     Chart.defaults.font.family = "'IBM Plex Mono', monospace";
     Chart.defaults.font.size = 11;
 
-    // 数字滚动动画
+    // Rolling Number Animation
     function animateNum(id, to, prefix, suffix) {
         const el = document.getElementById(id);
         const start = performance.now();
@@ -457,7 +437,7 @@
         requestAnimationFrame(step);
     }
 
-    // 加载所有数据
+    // Load Data
     async function loadAll() {
         const [regionData, statusData, monthlyData, userData] = await Promise.all([
             fetch('/stats/region').then(r => r.json()),
@@ -475,24 +455,23 @@
         const status = statusData.map(r => ({ label: r.split('|')[0], value: parseInt(r.split('|')[1]) }));
         const monthly = monthlyData.map(r => ({ label: r.split('|')[0], value: parseFloat(r.split('|')[1]) }));
 
-        // 统计卡片
+        // Stats Cards
         const totalRevenue = users.reduce((s, u) => s + u.amount, 0);
         const vipCount     = users.filter(u => u.status === 'vip').length;
         const vipRate      = users.length ? Math.round(vipCount / users.length * 100) : 0;
-        const orderCount   = monthlyData.length > 0 ? monthlyData.reduce((s, r) => s + 1, 0) : 0;
 
         animateNum('s-total',    users.length,              '',  '');
-        animateNum('s-revenue',  Math.round(totalRevenue),  '¥', '');
+        animateNum('s-revenue',  Math.round(totalRevenue),  '$', '');
         animateNum('s-vip-rate', vipRate,                   '',  '%');
         animateNum('s-orders',   monthly.length,            '',  '');
 
-        // 折线图
+        // Line Chart
         new Chart(document.getElementById('lineChart'), {
             type: 'line',
             data: {
                 labels: monthly.map(m => m.label),
                 datasets: [{
-                    label: '订单金额',
+                    label: 'Revenue',
                     data: monthly.map(m => m.value),
                     borderColor: '#00f5a0',
                     backgroundColor: 'rgba(0,245,160,0.06)',
@@ -513,28 +492,26 @@
                         backgroundColor: '#161b26',
                         borderColor: '#2a3550',
                         borderWidth: 1,
-                        callbacks: {
-                            label: ctx => '¥ ' + ctx.parsed.y.toLocaleString()
-                        }
+                        callbacks: { label: ctx => '$ ' + ctx.parsed.y.toLocaleString() }
                     }
                 },
                 scales: {
                     x: { grid: { color: '#1e2640' } },
                     y: {
                         grid: { color: '#1e2640' },
-                        ticks: { callback: val => '¥' + val.toLocaleString() }
+                        ticks: { callback: val => '$' + val.toLocaleString() }
                     }
                 }
             }
         });
 
-        // 柱状图
+        // Bar Chart
         new Chart(document.getElementById('barChart'), {
             type: 'bar',
             data: {
                 labels: region.map(r => r.label),
                 datasets: [{
-                    label: '用户数',
+                    label: 'Users',
                     data: region.map(r => r.value),
                     backgroundColor: ['rgba(0,245,160,0.7)', 'rgba(77,184,255,0.7)', 'rgba(255,159,67,0.7)', 'rgba(167,139,250,0.7)'],
                     borderColor:     ['#00f5a0', '#4db8ff', '#ff9f43', '#a78bfa'],
@@ -560,12 +537,12 @@
             }
         });
 
-        // 饼图
-        const statusLabel = { vip: 'VIP', active: '活跃', inactive: '不活跃' };
+        // Pie Chart
+        const statusLabelMap = { vip: 'VIP', active: 'Active', inactive: 'Inactive' };
         new Chart(document.getElementById('pieChart'), {
             type: 'doughnut',
             data: {
-                labels: status.map(s => statusLabel[s.label] || s.label),
+                labels: status.map(s => statusLabelMap[s.label] || s.label.toUpperCase()),
                 datasets: [{
                     data: status.map(s => s.value),
                     backgroundColor: ['rgba(255,159,67,0.8)', 'rgba(0,245,160,0.8)', 'rgba(255,107,107,0.8)'],
@@ -592,7 +569,7 @@
             }
         });
 
-        // 消费排行榜
+        // Leaderboard
         const sorted = [...users].sort((a, b) => b.amount - a.amount).slice(0, 6);
         const maxAmt = sorted[0]?.amount || 1;
         document.getElementById('rank-list').innerHTML = sorted.map((u, i) => `
@@ -603,7 +580,7 @@
         <div class="rank-bar-wrap">
           <div class="rank-bar" style="width:${Math.round(u.amount / maxAmt * 100)}%"></div>
         </div>
-        <div class="rank-amount">¥ ${u.amount.toLocaleString()}</div>
+        <div class="rank-amount">$ ${u.amount.toLocaleString()}</div>
       </div>
     `).join('');
     }

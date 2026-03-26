@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>用户管理系统</title>
+    <title>User Management System</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -566,15 +566,15 @@
             ADMIN · SHOP_DB
         </div>
         <div class="header-nav">
-            <a class="nav-item active" href="/index.html">用户管理</a>
-            <a class="nav-item" href="/orders.html">订单数据</a>
-            <a class="nav-item" href="/report.html">数据报表</a>
+            <a class="nav-item active" href="/index.html">Users</a>
+            <a class="nav-item" href="/orders.html">Orders</a>
+            <a class="nav-item" href="/report.html">Reports</a>
         </div>
     </div>
     <div class="header-right">
         <span class="time-display" id="clock"></span>
         <button class="btn btn-add" onclick="openAdd()">
-            <i class="fas fa-user-plus"></i> 新增用户
+            <i class="fas fa-user-plus"></i> Add User
         </button>
     </div>
 </div>
@@ -583,7 +583,7 @@
 
     <div class="page-header">
         <div>
-            <div class="page-title">用户<span>管理</span>面板</div>
+            <div class="page-title">User <span>Management</span></div>
             <div class="page-subtitle">// real-time database management</div>
         </div>
     </div>
@@ -612,36 +612,36 @@
             <div class="field-wrap">
                 <label>REGION</label>
                 <select id="f-region">
-                    <option value="">全部地区</option>
-                    <option value="华东">华东</option>
-                    <option value="华南">华南</option>
-                    <option value="华北">华北</option>
-                    <option value="西南">西南</option>
+                    <option value="">All Regions</option>
+                    <option value="华东">East China</option>
+                    <option value="华南">South China</option>
+                    <option value="华北">North China</option>
+                    <option value="西南">Southwest</option>
                 </select>
             </div>
             <div class="field-wrap">
                 <label>STATUS</label>
                 <select id="f-status">
-                    <option value="">全部状态</option>
+                    <option value="">All Status</option>
                     <option value="vip">VIP</option>
-                    <option value="active">活跃</option>
-                    <option value="inactive">不活跃</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
                 </select>
             </div>
-            <button class="btn btn-primary" onclick="loadData()">查询</button>
+            <button class="btn btn-primary" onclick="loadData()">Search</button>
             <input type="file" id="csv-file" accept=".csv" style="display:none" onchange="importCSV()">
             <button class="btn btn-add" onclick="document.getElementById('csv-file').click()">
-                <i class="fas fa-file-import"></i> 导入 CSV
+                <i class="fas fa-file-import"></i> Import CSV
             </button>
             <button class="btn btn-add" onclick="exportCSV()">
-                <i class="fas fa-file-export"></i> 导出 CSV
+                <i class="fas fa-file-export"></i> Export CSV
             </button>
         </div>
     </div>
 
     <div class="status-bar">
         <div class="status-dot" id="status-dot"></div>
-        <span id="status-msg">初始化中...</span>
+        <span id="status-msg">Initializing...</span>
     </div>
 
     <div class="table-wrap">
@@ -649,12 +649,12 @@
             <thead>
             <tr>
                 <th>ID</th>
-                <th>姓名</th>
-                <th>邮箱</th>
-                <th>地区</th>
-                <th>状态</th>
-                <th>总消费</th>
-                <th>操作</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Region</th>
+                <th>Status</th>
+                <th>Total Spend</th>
+                <th>Actions</th>
             </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -665,32 +665,32 @@
 <div class="modal-bg" id="modal">
     <div class="modal">
         <div class="modal-header">
-            <div class="modal-title" id="modal-title">新增用户</div>
+            <div class="modal-title" id="modal-title">Add User</div>
             <button class="modal-close" onclick="closeModal()">×</button>
         </div>
         <input type="hidden" id="edit-id">
-        <div class="form-row"><label>姓名</label><input type="text" id="f-name" placeholder="张伟"></div>
-        <div class="form-row"><label>邮箱</label><input type="text" id="f-email" placeholder="example@mail.com"></div>
+        <div class="form-row"><label>Name</label><input type="text" id="f-name" placeholder="John Smith"></div>
+        <div class="form-row"><label>Email</label><input type="text" id="f-email" placeholder="example@mail.com"></div>
         <div class="form-row">
-            <label>地区</label>
+            <label>Region</label>
             <select id="f-reg">
-                <option value="华东">华东</option>
-                <option value="华南">华南</option>
-                <option value="华北">华北</option>
-                <option value="西南">西南</option>
+                <option value="华东">East China</option>
+                <option value="华南">South China</option>
+                <option value="华北">North China</option>
+                <option value="西南">Southwest</option>
             </select>
         </div>
         <div class="form-row">
-            <label>状态</label>
+            <label>Status</label>
             <select id="f-stat">
-                <option value="active">活跃</option>
+                <option value="active">Active</option>
                 <option value="vip">VIP</option>
-                <option value="inactive">不活跃</option>
+                <option value="inactive">Inactive</option>
             </select>
         </div>
         <div class="modal-footer">
-            <button class="btn-ghost" onclick="closeModal()">取消</button>
-            <button class="btn btn-primary" onclick="saveUser()">保存</button>
+            <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveUser()">Save</button>
         </div>
     </div>
 </div>
@@ -698,11 +698,11 @@
 <div class="modal-bg" id="confirm-modal">
     <div class="confirm-modal">
         <div class="confirm-icon">⚠</div>
-        <div class="confirm-title">确认删除</div>
-        <div class="confirm-desc" id="confirm-desc">此操作不可撤销，同时会删除该用户的所有订单数据。</div>
+        <div class="confirm-title">Confirm Delete</div>
+        <div class="confirm-desc" id="confirm-desc">This action cannot be undone and will also delete all order records for this user.</div>
         <div class="confirm-btns">
-            <button class="btn-ghost" onclick="closeConfirm()">取消</button>
-            <button class="btn-danger" id="confirm-ok">确认删除</button>
+            <button class="btn-ghost" onclick="closeConfirm()">Cancel</button>
+            <button class="btn-danger" id="confirm-ok">Delete</button>
         </div>
     </div>
 </div>
@@ -714,7 +714,7 @@
 
     function updateClock() {
         document.getElementById('clock').textContent =
-            new Date().toLocaleTimeString('zh-CN', { hour12: false });
+            new Date().toLocaleTimeString('en-US', { hour12: false });
     }
     setInterval(updateClock, 1000);
     updateClock();
@@ -729,7 +729,7 @@
     function loadData() {
         const region = document.getElementById('f-region').value;
         const status = document.getElementById('f-status').value;
-        setStatus(true, '正在查询数据库...');
+        setStatus(true, 'Querying database...');
         fetch('/search?region=' + encodeURIComponent(region) + '&status=' + encodeURIComponent(status))
             .then(r => r.json())
             .then(data => {
@@ -739,9 +739,9 @@
                 });
                 renderTable(allData);
                 renderStats(allData);
-                setStatus(false, '共 ' + allData.length + ' 条记录 · 已同步');
+                setStatus(false, allData.length + ' records · synced');
             })
-            .catch(() => setStatus(false, '连接失败，请检查服务器'));
+            .catch(() => setStatus(false, 'Connection failed'));
     }
 
     function renderTable(data) {
@@ -763,10 +763,10 @@
         <td>
           <div class="actions">
             <button class="btn-sm btn-edit-sm" onclick="openEdit('${u.id}')">
-              <i class="fas fa-edit"></i> 编辑
+              <i class="fas fa-edit"></i> Edit
             </button>
             <button class="btn-sm btn-del-sm" onclick="confirmDelete('${u.id}', '${u.name}')">
-              <i class="fas fa-trash"></i> 删除
+              <i class="fas fa-trash"></i> Delete
             </button>
           </div>
         </td>
@@ -795,12 +795,12 @@
 
     function badge(status) {
         const map   = { vip: 'badge-vip', active: 'badge-active', inactive: 'badge-inactive' };
-        const label = { vip: 'VIP', active: '活跃', inactive: '不活跃' };
+        const label = { vip: 'VIP', active: 'Active', inactive: 'Inactive' };
         return `<span class="badge ${map[status]}">${label[status]}</span>`;
     }
 
     function openAdd() {
-        document.getElementById('modal-title').textContent = '新增用户';
+        document.getElementById('modal-title').textContent = 'Add User';
         document.getElementById('edit-id').value  = '';
         document.getElementById('f-name').value   = '';
         document.getElementById('f-email').value  = '';
@@ -812,7 +812,7 @@
 
     function openEdit(id) {
         const u = allData.find(u => u.id == id);
-        document.getElementById('modal-title').textContent = '编辑用户';
+        document.getElementById('modal-title').textContent = 'Edit User';
         document.getElementById('edit-id').value  = u.id;
         document.getElementById('f-name').value   = u.name;
         document.getElementById('f-email').value  = u.email;
@@ -829,20 +829,20 @@
         const email  = document.getElementById('f-email').value.trim();
         const region = document.getElementById('f-reg').value;
         const status = document.getElementById('f-stat').value;
-        if (!name || !email) { showToast('姓名和邮箱不能为空', 'error'); return; }
+        if (!name || !email) { showToast('Name and email are required', 'error'); return; }
         const params = new URLSearchParams({ name, email, region, status });
         const isEdit = id !== '';
         fetch((isEdit ? '/user/update/' + id : '/user/add') + '?' + params, { method: isEdit ? 'PUT' : 'POST' })
             .then(r => r.text())
             .then(result => {
-                if (result === 'success') { closeModal(); loadData(); showToast(isEdit ? '用户信息已更新' : '用户已成功新增', 'success'); }
-                else showToast('操作失败：' + result, 'error');
+                if (result === 'success') { closeModal(); loadData(); showToast(isEdit ? 'User updated' : 'User added', 'success'); }
+                else showToast('Failed: ' + result, 'error');
             });
     }
 
     function confirmDelete(id, name) {
         document.getElementById('confirm-desc').textContent =
-            '即将删除用户「' + name + '」，此操作不可撤销，同时会删除其所有订单数据。';
+            'Delete user "' + name + '"? This cannot be undone and will also remove all their orders.';
         document.getElementById('confirm-modal').classList.add('open');
         document.getElementById('confirm-ok').onclick = () => doDelete(id, name);
     }
@@ -854,8 +854,8 @@
         fetch('/user/delete/' + id, { method: 'DELETE' })
             .then(r => r.text())
             .then(result => {
-                if (result === 'success') { loadData(); showToast('用户「' + name + '」已删除', 'success'); }
-                else showToast('删除失败：' + result, 'error');
+                if (result === 'success') { loadData(); showToast('"' + name + '" deleted', 'success'); }
+                else showToast('Delete failed: ' + result, 'error');
             });
     }
 
@@ -864,28 +864,28 @@
         if (!file) return;
         const formData = new FormData();
         formData.append('file', file);
-        setStatus(true, '正在导入，请稍候...');
+        setStatus(true, 'Importing, please wait...');
         fetch('/user/import', { method: 'POST', body: formData })
             .then(r => r.text())
             .then(result => {
                 if (result.startsWith('success')) {
                     loadData();
-                    showToast('成功导入 ' + result.split(':')[1] + ' 条数据', 'success');
-                } else showToast('导入失败：' + result, 'error');
+                    showToast('Imported ' + result.split(':')[1] + ' records', 'success');
+                } else showToast('Import failed: ' + result, 'error');
                 document.getElementById('csv-file').value = '';
             });
     }
 
     function exportCSV() {
-        if (!allData.length) { showToast('暂无数据可导出', 'error'); return; }
-        const header = 'ID,姓名,邮箱,地区,状态,总消费';
+        if (!allData.length) { showToast('No data to export', 'error'); return; }
+        const header = 'ID,Name,Email,Region,Status,Total Spend';
         const rows   = allData.map(u => `${u.id},${u.name},${u.email},${u.region},${u.status},${u.amount}`);
         const blob   = new Blob([[header, ...rows].join('\n')], { type: 'text/csv;charset=utf-8;' });
         const a      = document.createElement('a');
         a.href       = URL.createObjectURL(blob);
-        a.download   = '用户数据_' + new Date().toLocaleDateString('zh-CN') + '.csv';
+        a.download   = 'users_' + new Date().toLocaleDateString('en-CA') + '.csv';
         a.click();
-        showToast('导出成功', 'success');
+        showToast('Export successful', 'success');
     }
 
     function showToast(msg, type) {
