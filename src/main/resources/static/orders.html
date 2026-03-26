@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>订单管理</title>
+    <title>Order Management</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -144,7 +144,6 @@
         .page-title span { color: var(--blue); }
         .page-subtitle { font-size: 12px; color: var(--muted2); margin-top: 4px; font-family: 'IBM Plex Mono', monospace; }
 
-        /* 统计卡片 */
         .stats {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -183,11 +182,6 @@
         .c-orange::before { background: linear-gradient(90deg, transparent, var(--orange), transparent); }
         .c-red::before    { background: linear-gradient(90deg, transparent, var(--red), transparent); }
 
-        .stat-card:hover.c-blue   { border-color: rgba(77,184,255,0.3); }
-        .stat-card:hover.c-green  { border-color: rgba(0,245,160,0.3); }
-        .stat-card:hover.c-orange { border-color: rgba(255,159,67,0.3); }
-        .stat-card:hover.c-red    { border-color: rgba(255,107,107,0.3); }
-
         .stat-label {
             font-family: 'IBM Plex Mono', monospace;
             font-size: 10px;
@@ -209,7 +203,6 @@
         .c-orange .stat-value { color: var(--orange); }
         .c-red    .stat-value { color: var(--red); }
 
-        /* 工具栏 */
         .toolbar {
             display: flex;
             align-items: flex-end;
@@ -292,7 +285,6 @@
         }
         .btn-del-sm:hover { background: rgba(255,107,107,0.2); }
 
-        /* 状态栏 */
         .status-bar {
             display: flex;
             align-items: center;
@@ -306,7 +298,6 @@
         .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); }
         .status-dot.loading { animation: pulse 1s ease-in-out infinite; background: var(--orange); }
 
-        /* 表格 */
         .table-wrap {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -358,7 +349,6 @@
         .amount-cell { font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--blue); }
         .date-cell { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted2); }
 
-        /* 弹窗 */
         .modal-bg {
             display: none;
             position: fixed;
@@ -448,7 +438,6 @@
         }
         .btn-ghost:hover { border-color: var(--text); color: var(--text); }
 
-        /* 确认弹窗 */
         .confirm-modal {
             background: var(--surface);
             border: 1px solid var(--border2);
@@ -487,7 +476,6 @@
         }
         .btn-danger:hover { background: rgba(255,107,107,0.25); }
 
-        /* Toast */
         .toast {
             position: fixed;
             bottom: 28px;
@@ -523,14 +511,14 @@
             ADMIN · SHOP_DB
         </div>
         <div class="header-nav">
-            <a class="nav-item" href="/index.html">用户管理</a>
-            <a class="nav-item active" href="/orders.html">订单数据</a>
-            <a class="nav-item" href="/report.html">数据报表</a>
+            <a class="nav-item" href="/index.html">USERS</a>
+            <a class="nav-item active" href="/orders.html">ORDERS</a>
+            <a class="nav-item" href="/report.html">REPORTS</a>
         </div>
     </div>
     <div class="header-right">
         <span class="time-display" id="clock"></span>
-        <button class="btn btn-add" onclick="openAdd()"><i class="fas fa-plus"></i> 新增订单</button>
+        <button class="btn btn-add" onclick="openAdd()"><i class="fas fa-plus"></i> NEW ORDER</button>
     </div>
 </div>
 
@@ -538,72 +526,68 @@
 
     <div class="page-header">
         <div>
-            <div class="page-title">订单<span>管理</span>面板</div>
+            <div class="page-title">Order <span>Management</span> Panel</div>
             <div class="page-subtitle">// order management · real-time</div>
         </div>
     </div>
 
-    <!-- 统计卡片 -->
     <div class="stats">
         <div class="stat-card c-blue">
-            <div class="stat-label">总订单数</div>
+            <div class="stat-label">Total Orders</div>
             <div class="stat-value" id="s-total">—</div>
         </div>
         <div class="stat-card c-green">
-            <div class="stat-label">总金额</div>
+            <div class="stat-label">Total Amount</div>
             <div class="stat-value" id="s-amount">—</div>
         </div>
         <div class="stat-card c-orange">
-            <div class="stat-label">平均金额</div>
+            <div class="stat-label">Average Order</div>
             <div class="stat-value" id="s-avg">—</div>
         </div>
         <div class="stat-card c-red">
-            <div class="stat-label">最大单笔</div>
+            <div class="stat-label">Peak Value</div>
             <div class="stat-value" id="s-max">—</div>
         </div>
     </div>
 
-    <!-- 工具栏 -->
     <div class="toolbar">
         <div class="filter-group">
             <div class="field-wrap">
-                <label>搜索用户</label>
-                <input type="text" id="f-search" placeholder="输入用户名..." oninput="filterTable()">
+                <label>Search User</label>
+                <input type="text" id="f-search" placeholder="Type name..." oninput="filterTable()">
             </div>
             <div class="field-wrap">
-                <label>日期从</label>
+                <label>Date From</label>
                 <input type="date" id="f-from" onchange="filterTable()">
             </div>
             <div class="field-wrap">
-                <label>日期到</label>
+                <label>Date To</label>
                 <input type="date" id="f-to" onchange="filterTable()">
             </div>
             <button class="btn btn-primary" onclick="resetFilter()">
-                <i class="fas fa-rotate-left"></i> 重置
+                <i class="fas fa-rotate-left"></i> Reset
             </button>
         </div>
         <button class="btn btn-add" onclick="exportCSV()">
-            <i class="fas fa-file-export"></i> 导出 CSV
+            <i class="fas fa-file-export"></i> Export CSV
         </button>
     </div>
 
-    <!-- 状态栏 -->
     <div class="status-bar">
         <div class="status-dot" id="status-dot"></div>
-        <span id="status-msg">初始化中...</span>
+        <span id="status-msg">Initializing...</span>
     </div>
 
-    <!-- 表格 -->
     <div class="table-wrap">
         <table>
             <thead>
             <tr>
-                <th>订单 ID</th>
-                <th>用户</th>
-                <th>地区</th>
-                <th>金额</th>
-                <th>日期</th>
-                <th>操作</th>
+                <th>Order ID</th>
+                <th>User</th>
+                <th>Region</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Actions</th>
             </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -611,41 +595,39 @@
     </div>
 </div>
 
-<!-- 新增订单弹窗 -->
 <div class="modal-bg" id="modal">
     <div class="modal">
         <div class="modal-header">
-            <div class="modal-title">新增订单</div>
+            <div class="modal-title">Create New Order</div>
             <button class="modal-close" onclick="closeModal()">×</button>
         </div>
         <div class="form-row">
-            <label>选择用户</label>
+            <label>Select User</label>
             <select id="f-user"></select>
         </div>
         <div class="form-row">
-            <label>金额（元）</label>
-            <input type="number" id="f-amount" placeholder="例：888">
+            <label>Amount (USD)</label>
+            <input type="number" id="f-amount" placeholder="e.g. 888">
         </div>
         <div class="form-row">
-            <label>订单日期</label>
+            <label>Order Date</label>
             <input type="date" id="f-date">
         </div>
         <div class="modal-footer">
-            <button class="btn-ghost" onclick="closeModal()">取消</button>
-            <button class="btn btn-primary" onclick="saveOrder()">保存</button>
+            <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveOrder()">Save Order</button>
         </div>
     </div>
 </div>
 
-<!-- 删除确认弹窗 -->
 <div class="modal-bg" id="confirm-modal">
     <div class="confirm-modal">
         <div class="confirm-icon">⚠</div>
-        <div class="confirm-title">确认删除</div>
-        <div class="confirm-desc" id="confirm-desc">此操作不可撤销。</div>
+        <div class="confirm-title">Confirm Deletion</div>
+        <div class="confirm-desc" id="confirm-desc">This action cannot be undone.</div>
         <div class="confirm-btns">
-            <button class="btn-ghost" onclick="closeConfirm()">取消</button>
-            <button class="btn-danger" id="confirm-ok">确认删除</button>
+            <button class="btn-ghost" onclick="closeConfirm()">Cancel</button>
+            <button class="btn-danger" id="confirm-ok">Delete Permanently</button>
         </div>
     </div>
 </div>
@@ -656,10 +638,10 @@
     let allOrders = [];
     let filtered  = [];
 
-    // 时钟
+    // Clock
     function updateClock() {
         document.getElementById('clock').textContent =
-            new Date().toLocaleTimeString('zh-CN', { hour12: false });
+            new Date().toLocaleTimeString('en-US', { hour12: false });
     }
     setInterval(updateClock, 1000);
     updateClock();
@@ -667,7 +649,7 @@
     window.onload = () => {
         loadOrders();
         loadUsers();
-        // 默认日期范围：近一年
+        // Default range: last 12 months
         const today = new Date().toISOString().split('T')[0];
         const lastYear = new Date(Date.now() - 365*24*60*60*1000).toISOString().split('T')[0];
         document.getElementById('f-to').value   = today;
@@ -679,9 +661,9 @@
         document.getElementById('status-msg').textContent = msg;
     }
 
-    // 加载订单
+    // Load Data
     function loadOrders() {
-        setStatus(true, '正在加载订单...');
+        setStatus(true, 'Fetching orders...');
         fetch('/orders')
             .then(r => r.json())
             .then(data => {
@@ -690,12 +672,11 @@
                     return { id: p[0], name: p[1], region: p[2], amount: parseFloat(p[3]), date: p[4] };
                 });
                 filterTable();
-                setStatus(false, '共 ' + allOrders.length + ' 条订单 · 已同步');
+                setStatus(false, allOrders.length + ' orders loaded · In sync');
             })
-            .catch(() => setStatus(false, '加载失败'));
+            .catch(() => setStatus(false, 'Failed to fetch data'));
     }
 
-    // 加载用户列表（给新增弹窗用）
     function loadUsers() {
         fetch('/users/all')
             .then(r => r.json())
@@ -708,7 +689,6 @@
             });
     }
 
-    // 筛选
     function filterTable() {
         const keyword = document.getElementById('f-search').value.toLowerCase();
         const from    = document.getElementById('f-from').value;
@@ -723,7 +703,7 @@
 
         renderTable(filtered);
         renderStats(filtered);
-        setStatus(false, '显示 ' + filtered.length + ' / ' + allOrders.length + ' 条订单');
+        setStatus(false, 'Showing ' + filtered.length + ' / ' + allOrders.length + ' records');
     }
 
     function resetFilter() {
@@ -737,7 +717,7 @@
         const tbody = document.getElementById('tbody');
         if (data.length === 0) {
             tbody.innerHTML = `<tr><td colspan="6">
-        <div class="empty-state"><p>// no orders found</p></div>
+        <div class="empty-state"><p>// no records found</p></div>
       </td></tr>`;
             return;
         }
@@ -746,11 +726,11 @@
         <td class="id-cell">#${o.id}</td>
         <td class="name-cell">${o.name}</td>
         <td style="color:var(--muted2)">${o.region}</td>
-        <td class="amount-cell">¥ ${o.amount.toLocaleString()}</td>
+        <td class="amount-cell">$ ${o.amount.toLocaleString()}</td>
         <td class="date-cell">${o.date}</td>
         <td>
           <button class="btn-sm btn-del-sm" onclick="confirmDelete('${o.id}', '${o.name}', '${o.amount}')">
-            <i class="fas fa-trash"></i> 删除
+            <i class="fas fa-trash"></i> Delete
           </button>
         </td>
       </tr>
@@ -763,9 +743,9 @@
         const avg    = total ? Math.round(amount / total) : 0;
         const max    = total ? Math.max(...data.map(o => o.amount)) : 0;
         animateNum('s-total',  total,            '');
-        animateNum('s-amount', Math.round(amount), '¥');
-        animateNum('s-avg',    avg,              '¥');
-        animateNum('s-max',    max,              '¥');
+        animateNum('s-amount', Math.round(amount), '$');
+        animateNum('s-avg',    avg,              '$');
+        animateNum('s-max',    max,              '$');
     }
 
     function animateNum(id, to, prefix) {
@@ -780,7 +760,6 @@
         requestAnimationFrame(step);
     }
 
-    // 新增订单
     function openAdd() {
         document.getElementById('f-amount').value = '';
         document.getElementById('f-date').value   = new Date().toISOString().split('T')[0];
@@ -797,7 +776,7 @@
         const amount = document.getElementById('f-amount').value.trim();
         const date   = document.getElementById('f-date').value;
 
-        if (!amount || !date) { showToast('金额和日期不能为空', 'error'); return; }
+        if (!amount || !date) { showToast('Amount and Date are required', 'error'); return; }
 
         const params = new URLSearchParams({ userId, amount, orderDate: date });
         fetch('/order/add?' + params.toString(), { method: 'POST' })
@@ -806,17 +785,16 @@
                 if (result === 'success') {
                     closeModal();
                     loadOrders();
-                    showToast('订单新增成功', 'success');
+                    showToast('Order created successfully', 'success');
                 } else {
-                    showToast('新增失败：' + result, 'error');
+                    showToast('Error: ' + result, 'error');
                 }
             });
     }
 
-    // 删除确认
     function confirmDelete(id, name, amount) {
         document.getElementById('confirm-desc').textContent =
-            '即将删除 ' + name + ' 的订单 #' + id + '（¥' + parseFloat(amount).toLocaleString() + '），此操作不可撤销。';
+            'Deleting order #' + id + ' for ' + name + ' ($' + parseFloat(amount).toLocaleString() + '). This cannot be undone.';
         document.getElementById('confirm-modal').classList.add('open');
         document.getElementById('confirm-ok').onclick = () => doDelete(id);
     }
@@ -832,24 +810,23 @@
             .then(result => {
                 if (result === 'success') {
                     loadOrders();
-                    showToast('订单已删除', 'success');
+                    showToast('Order deleted successfully', 'success');
                 } else {
-                    showToast('删除失败：' + result, 'error');
+                    showToast('Error: ' + result, 'error');
                 }
             });
     }
 
-    // 导出 CSV
     function exportCSV() {
-        if (!filtered.length) { showToast('暂无数据可导出', 'error'); return; }
-        const header = '订单ID,用户,地区,金额,日期';
+        if (!filtered.length) { showToast('No data to export', 'error'); return; }
+        const header = 'Order ID,User,Region,Amount,Date';
         const rows   = filtered.map(o => `${o.id},${o.name},${o.region},${o.amount},${o.date}`);
         const blob   = new Blob([[header, ...rows].join('\n')], { type: 'text/csv;charset=utf-8;' });
         const a      = document.createElement('a');
         a.href       = URL.createObjectURL(blob);
-        a.download   = '订单数据_' + new Date().toLocaleDateString('zh-CN') + '.csv';
+        a.download   = 'Orders_' + new Date().toISOString().split('T')[0] + '.csv';
         a.click();
-        showToast('导出成功', 'success');
+        showToast('CSV Exported', 'success');
     }
 
     function showToast(msg, type) {
